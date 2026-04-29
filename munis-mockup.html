@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUNIS — Meridian Unified Network Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0a0e14;
+  --bg2:       #0d1117;
+  --bg3:       #161b22;
+  --bg4:       #1c2333;
+  --border:    #21262d;
+  --border2:   #30363d;
+  --text:      #c9d1d9;
+  --text2:     #8b949e;
+  --text3:     #484f58;
+  --accent:    #1f6feb;
+  --accent2:   #388bfd;
+  --green:     #3fb950;
+  --green2:    #238636;
+  --amber:     #d29922;
+  --amber2:    #bb8009;
+  --red:       #f85149;
+  --red2:      #da3633;
+  --cyan:      #39c5cf;
+  --purple:    #bc8cff;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top Bar ── */
+.topbar {
+  height: 48px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.topbar-nav { display: flex; gap: 2px; margin-left: 8px; }
+.topbar-nav button {
+  background: none; border: none; color: var(--text2); font-family: var(--sans);
+  font-size: 12px; padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  transition: all 0.15s;
+}
+.topbar-nav button:hover { background: var(--bg3); color: var(--text); }
+.topbar-nav button.active { background: var(--bg4); color: var(--text); }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.status-pill {
+  font-family: var(--mono); font-size: 10px; padding: 3px 8px;
+  border-radius: 20px; border: 1px solid;
+}
+.status-pill.ok { color: var(--green); border-color: var(--green2); background: rgba(63,185,80,0.08); }
+.status-pill.warn { color: var(--amber); border-color: var(--amber2); background: rgba(210,153,34,0.08); }
+
+.user-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: white; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; font-family: var(--mono);
+}
+
+/* ── Layout ── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 52px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar button {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); transition: all 0.15s; font-size: 16px;
+  position: relative;
+}
+.sidebar button:hover { background: var(--bg3); color: var(--text2); }
+.sidebar button.active { background: var(--bg4); color: var(--accent2); }
+.sidebar button .badge {
+  position: absolute; top: 4px; right: 4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--red); color: white; font-size: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+}
+
+.sidebar-divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── Main Content ── */
+.main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── Views ── */
+.view { display: none; flex: 1; overflow: hidden; }
+.view.active { display: flex; }
+
+/* ── Dashboard View ── */
+#view-dashboard {
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px;
+  gap: 16px;
+}
+
+.view-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.view-title { font-size: 18px; font-weight: 600; color: var(--text); }
+.view-sub { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+
+.btn {
+  font-family: var(--sans); font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 6px; border: 1px solid;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: none; border-color: var(--border2); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--text3); color: var(--text); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.stat-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; cursor: pointer; transition: border-color 0.15s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-size: 11px; color: var(--text2); font-family: var(--mono); letter-spacing: 0.05em; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 600; font-family: var(--mono); }
+.stat-value.green { color: var(--green); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.red { color: var(--red); }
+.stat-value.cyan { color: var(--cyan); }
+.stat-delta { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+
+.panel {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden;
+}
+.panel-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: 0.03em; }
+.panel-action { font-size: 11px; color: var(--accent2); cursor: pointer; }
+.panel-action:hover { text-decoration: underline; }
+
+.alert-list { display: flex; flex-direction: column; }
+.alert-row {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: background 0.1s;
+}
+.alert-row:hover { background: var(--bg4); }
+.alert-row:last-child { border-bottom: none; }
+
+.sev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sev-high { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.sev-med { background: var(--amber); }
+.sev-low { background: var(--green); }
+
+.alert-text { flex: 1; }
+.alert-title { font-size: 12px; color: var(--text); }
+.alert-detail { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+.alert-time { font-size: 11px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+
+.device-list { display: flex; flex-direction: column; }
+.device-row {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: background 0.1s;
+}
+.device-row:hover { background: var(--bg4); }
+.device-row:last-child { border-bottom: none; }
+
+.device-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ds-ok { background: var(--green); }
+.ds-warn { background: var(--amber); animation: pulse 2s infinite; }
+.ds-down { background: var(--red); animation: pulse 1s infinite; }
+
+.device-info { flex: 1; }
+.device-name { font-size: 12px; font-weight: 500; font-family: var(--mono); color: var(--text); }
+.device-meta { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.device-badge {
+  font-size: 10px; font-family: var(--mono); padding: 2px 7px;
+  border-radius: 4px; border: 1px solid;
+}
+.db-cisco { color: #67e8f9; border-color: rgba(103,232,249,0.3); background: rgba(103,232,249,0.06); }
+.db-junos { color: var(--purple); border-color: rgba(188,140,255,0.3); background: rgba(188,140,255,0.06); }
+.db-vyos { color: var(--green); border-color: rgba(63,185,80,0.3); background: rgba(63,185,80,0.06); }
+.db-panos { color: var(--amber); border-color: rgba(210,153,34,0.3); background: rgba(210,153,34,0.06); }
+
+/* ── Devices View ── */
+#view-devices { flex-direction: column; overflow: hidden; }
+
+.toolbar {
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg2); flex-shrink: 0;
+}
+
+.search-box {
+  flex: 1; max-width: 320px;
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 7px 12px; color: var(--text); font-family: var(--sans); font-size: 12px;
+  outline: none; transition: border-color 0.15s;
+}
+.search-box:focus { border-color: var(--accent); }
+.search-box::placeholder { color: var(--text3); }
+
+.filter-select {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 7px 10px; color: var(--text2); font-family: var(--sans); font-size: 12px;
+  outline: none; cursor: pointer;
+}
+
+.device-table { flex: 1; overflow-y: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--bg2); position: sticky; top: 0; z-index: 10; }
+th {
+  padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 500;
+  color: var(--text2); border-bottom: 1px solid var(--border);
+  font-family: var(--mono); letter-spacing: 0.04em; white-space: nowrap;
+}
+td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr { cursor: pointer; transition: background 0.1s; }
+tbody tr:hover { background: var(--bg3); }
+
+.td-mono { font-family: var(--mono); font-size: 12px; }
+.td-host { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-family: var(--mono); padding: 2px 8px;
+  border-radius: 4px; border: 1px solid;
+}
+.sb-managed { color: var(--green); border-color: rgba(63,185,80,0.3); background: rgba(63,185,80,0.08); }
+.sb-unreachable { color: var(--red); border-color: rgba(248,81,73,0.3); background: rgba(248,81,73,0.08); }
+.sb-degraded { color: var(--amber); border-color: rgba(210,153,34,0.3); background: rgba(210,153,34,0.08); }
+
+/* ── Config Diff View ── */
+#view-config { flex-direction: column; overflow: hidden; }
+
+.diff-header {
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+  display: flex; align-items: center; gap: 16px;
+}
+.diff-device-select {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 6px 10px; color: var(--text); font-family: var(--mono); font-size: 12px;
+  outline: none;
+}
+.diff-meta { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+.diff-stat { font-family: var(--mono); font-size: 11px; }
+.diff-adds { color: var(--green); }
+.diff-dels { color: var(--red); }
+
+.diff-content { flex: 1; overflow-y: auto; padding: 0; }
+.diff-line {
+  display: flex; font-family: var(--mono); font-size: 12px;
+  line-height: 1.6; white-space: pre;
+}
+.diff-line:hover { background: rgba(255,255,255,0.02); }
+.diff-line .ln { width: 52px; text-align: right; padding-right: 12px; color: var(--text3); user-select: none; flex-shrink: 0; font-size: 11px; }
+.diff-line .content { flex: 1; padding: 0 16px; }
+.diff-add { background: rgba(63,185,80,0.08); }
+.diff-add .content { color: var(--green); }
+.diff-add .ln { color: rgba(63,185,80,0.5); }
+.diff-del { background: rgba(248,81,73,0.08); }
+.diff-del .content { color: var(--red); }
+.diff-del .ln { color: rgba(248,81,73,0.5); }
+.diff-hunk { background: rgba(56,139,253,0.08); }
+.diff-hunk .content { color: var(--accent2); font-size: 11px; }
+
+/* ── Path Test View ── */
+#view-pathtest { flex-direction: column; overflow: hidden; }
+
+.pathtest-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+}
+.pathtest-form { display: flex; align-items: center; gap: 10px; }
+.path-input {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 8px 12px; color: var(--text); font-family: var(--mono); font-size: 12px;
+  outline: none; width: 200px; transition: border-color 0.15s;
+}
+.path-input:focus { border-color: var(--accent); }
+.path-arrow { color: var(--text3); font-size: 16px; }
+
+.btn-test { background: var(--accent); border: none; color: white; font-family: var(--sans); font-size: 12px; font-weight: 500; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+.btn-test:hover { background: var(--accent2); }
+
+.path-result { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+.path-node {
+  display: flex; align-items: center; gap: 0; width: 100%; max-width: 600px;
+  position: relative;
+}
+.hop-card {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px; display: flex; align-items: center;
+  gap: 12px; cursor: pointer; transition: border-color 0.15s;
+}
+.hop-card:hover { border-color: var(--border2); }
+.hop-card.permit { border-left: 3px solid var(--green); }
+.hop-card.deny { border-left: 3px solid var(--red); }
+.hop-card.unknown { border-left: 3px solid var(--text3); }
+
+.hop-icon { font-size: 18px; width: 24px; text-align: center; }
+.hop-info { flex: 1; }
+.hop-name { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+.hop-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.hop-rule { font-family: var(--mono); font-size: 11px; margin-top: 4px; }
+.hop-rule.permit { color: var(--green); }
+.hop-rule.deny { color: var(--red); }
+
+.hop-verdict {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 4px; flex-shrink: 0;
+}
+.hv-permit { background: rgba(63,185,80,0.15); color: var(--green); }
+.hv-deny { background: rgba(248,81,73,0.15); color: var(--red); }
+.hv-unknown { background: rgba(139,148,158,0.15); color: var(--text2); }
+
+.path-connector {
+  width: 2px; height: 20px; margin: 0 auto;
+  margin-left: calc(50% - 1px);
+}
+.pc-permit { background: var(--green); opacity: 0.4; }
+.pc-deny { background: var(--red); opacity: 0.4; }
+.pc-unknown { background: var(--text3); opacity: 0.4; }
+
+.path-source, .path-dest {
+  max-width: 600px; width: 100%;
+  background: var(--bg4); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 16px;
+  font-family: var(--mono); font-size: 12px; color: var(--text2);
+  display: flex; align-items: center; gap: 8px;
+}
+.path-source span, .path-dest span { color: var(--text); font-weight: 500; }
+
+/* ── Translation View ── */
+#view-translation { flex-direction: column; overflow: hidden; }
+
+.translation-layout { display: flex; flex: 1; overflow: hidden; gap: 0; }
+
+.translation-left {
+  width: 280px; flex-shrink: 0; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  background: var(--bg2);
+}
+
+.translation-panel-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  letter-spacing: 0.06em; font-family: var(--mono);
+}
+
+.pair-list { overflow-y: auto; flex: 1; }
+.pair-item {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+  display: flex; align-items: center; gap: 10px;
+}
+.pair-item:hover { background: var(--bg3); }
+.pair-item.active { background: var(--bg4); border-left: 2px solid var(--accent2); }
+.pair-os { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text); }
+.pair-arrow { color: var(--text3); font-size: 12px; }
+.pair-status { margin-left: auto; }
+
+.translation-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.report-bar {
+  padding: 10px 16px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; gap: 20px; flex-shrink: 0;
+}
+.report-stat { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; }
+.rs-ok { color: var(--green); }
+.rs-warn { color: var(--amber); }
+.rs-fail { color: var(--red); }
+
+.code-panels { display: flex; flex: 1; overflow: hidden; }
+.code-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.code-panel + .code-panel { border-left: 1px solid var(--border); }
+.code-panel-header {
+  padding: 8px 16px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.code-panel-header span { color: var(--accent2); }
+.code-content { flex: 1; overflow-y: auto; padding: 12px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--text); white-space: pre; }
+
+.kw-blue { color: #79c0ff; }
+.kw-green { color: #7ee787; }
+.kw-orange { color: #ffa657; }
+.kw-purple { color: var(--purple); }
+.kw-red { color: var(--red); }
+.kw-comment { color: var(--text3); }
+
+/* ── Recovery View ── */
+#view-recovery { flex-direction: column; overflow-y: auto; padding: 20px; gap: 16px; }
+
+.recovery-device-card {
+  background: var(--bg3); border: 1px solid var(--red2); border-radius: 8px; overflow: hidden;
+}
+.recovery-device-header {
+  padding: 12px 16px; background: rgba(248,81,73,0.08); border-bottom: 1px solid var(--red2);
+  display: flex; align-items: center; gap: 12px;
+}
+.recovery-device-name { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--red); }
+.recovery-cause { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.recovery-time { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text2); }
+
+.recovery-options { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.recovery-option {
+  background: var(--bg4); border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: all 0.15s;
+}
+.recovery-option:hover { border-color: var(--accent); }
+.recovery-rank { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--text3); width: 20px; text-align: center; flex-shrink: 0; }
+.recovery-info { flex: 1; }
+.recovery-option-title { font-size: 12px; font-weight: 500; color: var(--text); }
+.recovery-option-detail { font-size: 11px; color: var(--text2); margin-top: 3px; font-family: var(--mono); }
+.confidence-badge {
+  font-size: 10px; font-family: var(--mono); padding: 2px 8px;
+  border-radius: 4px; border: 1px solid; flex-shrink: 0;
+}
+.cb-high { color: var(--green); border-color: rgba(63,185,80,0.3); background: rgba(63,185,80,0.08); }
+.cb-med { color: var(--amber); border-color: rgba(210,153,34,0.3); background: rgba(210,153,34,0.08); }
+.btn-attempt { font-family: var(--sans); font-size: 11px; padding: 5px 12px; border-radius: 5px; border: 1px solid var(--accent); color: var(--accent2); background: rgba(31,111,235,0.08); cursor: pointer; flex-shrink: 0; }
+.btn-attempt:hover { background: rgba(31,111,235,0.2); }
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── Tooltip ── */
+.tooltip { position: relative; }
+.tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--bg4); border: 1px solid var(--border2); color: var(--text);
+  font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: nowrap;
+  margin-bottom: 4px; pointer-events: none; font-family: var(--sans); z-index: 999;
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    MUNIS
+  </div>
+  <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Meridian Unified Network Intelligence System</div>
+  <div class="topbar-nav">
+    <button class="active" onclick="setView('dashboard',this)">Dashboard</button>
+    <button onclick="setView('devices',this)">Devices</button>
+    <button onclick="setView('config',this)">Config</button>
+    <button onclick="setView('pathtest',this)">Path Test</button>
+    <button onclick="setView('translation',this)">Translation</button>
+    <button onclick="setView('recovery',this)">Recovery</button>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill ok">● API HEALTHY</div>
+    <div class="status-pill warn">⚠ 3 ALERTS</div>
+    <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">v0.1.0-dev</div>
+    <div class="user-badge">JD</div>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <button class="active tooltip" data-tip="Dashboard" onclick="setView('dashboard')">⊞</button>
+    <button class="tooltip" data-tip="Devices" onclick="setView('devices')">◫</button>
+    <button class="tooltip" data-tip="Configuration" onclick="setView('config')">≡</button>
+    <button class="tooltip" data-tip="Topology">⬡</button>
+    <button class="tooltip" data-tip="Telemetry">∿</button>
+    <div class="sidebar-divider"></div>
+    <button class="tooltip" data-tip="Path Test" onclick="setView('pathtest')">→</button>
+    <button class="tooltip" data-tip="Translation" onclick="setView('translation')">⇄</button>
+    <button class="tooltip" data-tip="Compliance">✓</button>
+    <div class="sidebar-divider"></div>
+    <button class="tooltip" data-tip="Recovery" onclick="setView('recovery')" style="color:var(--amber)">
+      ⚡<span class="badge">2</span>
+    </button>
+    <button class="tooltip" data-tip="Alerts" style="margin-top:auto">
+      🔔<span class="badge">3</span>
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Dashboard -->
+    <div id="view-dashboard" class="view active">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Network Overview</div>
+          <div class="view-sub">Last updated: 14:32:07 UTC — all systems nominal</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost">Export Report</button>
+          <button class="btn btn-primary" onclick="setView('devices')">+ Add Device</button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card" onclick="setView('devices')">
+          <div class="stat-label">MANAGED DEVICES</div>
+          <div class="stat-value cyan">47</div>
+          <div class="stat-delta">↑ 3 added this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">REACHABLE</div>
+          <div class="stat-value green">44</div>
+          <div class="stat-delta">93.6% availability</div>
+        </div>
+        <div class="stat-card" onclick="setView('recovery')">
+          <div class="stat-label">UNREACHABLE</div>
+          <div class="stat-value amber">2</div>
+          <div class="stat-delta">Recovery proposals available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">COMPLIANCE SCORE</div>
+          <div class="stat-value green">87%</div>
+          <div class="stat-delta">NIST 800-53 · 14 findings open</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">ACTIVE ALERTS</div>
+            <div class="panel-action">View all →</div>
+          </div>
+          <div class="alert-list">
+            <div class="alert-row">
+              <div class="sev-dot sev-high"></div>
+              <div class="alert-text">
+                <div class="alert-title">Management unreachable: CORE-SW-03</div>
+                <div class="alert-detail">Management VLAN 100 down on DIST-SW-01 · Recovery proposals available</div>
+              </div>
+              <div class="alert-time">14:23</div>
+            </div>
+            <div class="alert-row">
+              <div class="sev-dot sev-high"></div>
+              <div class="alert-text">
+                <div class="alert-title">Config changed out-of-band: EDGE-RTR-02</div>
+                <div class="alert-detail">syslog_config_change · Change not in platform — review diff</div>
+              </div>
+              <div class="alert-time">13:51</div>
+            </div>
+            <div class="alert-row">
+              <div class="sev-dot sev-med"></div>
+              <div class="alert-text">
+                <div class="alert-title">CVE-2024-20399 affects 3 devices</div>
+                <div class="alert-detail">Cisco IOS-XE · CVSS 9.8 · Patch available</div>
+              </div>
+              <div class="alert-time">09:14</div>
+            </div>
+            <div class="alert-row">
+              <div class="sev-dot sev-low"></div>
+              <div class="alert-text">
+                <div class="alert-title">Compliance drift: ACCESS-SW-11</div>
+                <div class="alert-detail">NTP server removed from config · NIST SC-45</div>
+              </div>
+              <div class="alert-time">08:30</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">RECENT CONFIG CHANGES</div>
+              <div class="panel-action" onclick="setView('config')">View diff →</div>
+            </div>
+            <div class="device-list">
+              <div class="device-row" onclick="setView('config')">
+                <div class="device-status-dot ds-warn"></div>
+                <div class="device-info">
+                  <div class="device-name">EDGE-RTR-02</div>
+                  <div class="device-meta">Out-of-band change · 13:51 · +3 −1 lines</div>
+                </div>
+              </div>
+              <div class="device-row" onclick="setView('config')">
+                <div class="device-status-dot ds-ok"></div>
+                <div class="device-info">
+                  <div class="device-name">CORE-RTR-01</div>
+                  <div class="device-meta">Scheduled pull · 13:00 · No change</div>
+                </div>
+              </div>
+              <div class="device-row" onclick="setView('config')">
+                <div class="device-status-dot ds-ok"></div>
+                <div class="device-info">
+                  <div class="device-name">ACCESS-SW-11</div>
+                  <div class="device-meta">syslog_login trigger · 11:23 · +0 −1 lines</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">TRANSLATION JOBS</div>
+              <div class="panel-action" onclick="setView('translation')">New job →</div>
+            </div>
+            <div class="device-list">
+              <div class="device-row" onclick="setView('translation')">
+                <div class="device-status-dot ds-ok"></div>
+                <div class="device-info">
+                  <div class="device-name">CORE-RTR-01 → JunOS</div>
+                  <div class="device-meta">IOS-XE→JunOS · 47 OK · 2 warnings · Awaiting review</div>
+                </div>
+              </div>
+              <div class="device-row" onclick="setView('translation')">
+                <div class="device-status-dot ds-warn"></div>
+                <div class="device-info">
+                  <div class="device-name">DIST-SW-01 → EOS</div>
+                  <div class="device-meta">NX-OS→EOS · 3 untranslatable · Review required</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">DEVICE INVENTORY</div>
+          <div class="panel-action" onclick="setView('devices')">View all →</div>
+        </div>
+        <div class="device-list" style="display:grid;grid-template-columns:repeat(3,1fr)">
+          <div class="device-row">
+            <div class="device-status-dot ds-ok"></div>
+            <div class="device-info"><div class="device-name">CORE-RTR-01</div><div class="device-meta">10.0.0.1 · Cisco IOS-XE</div></div>
+            <div class="device-badge db-cisco">IOS-XE</div>
+          </div>
+          <div class="device-row">
+            <div class="device-status-dot ds-down"></div>
+            <div class="device-info"><div class="device-name">CORE-SW-03</div><div class="device-meta">10.0.0.3 · Cisco NX-OS</div></div>
+            <div class="device-badge db-cisco">NX-OS</div>
+          </div>
+          <div class="device-row">
+            <div class="device-status-dot ds-ok"></div>
+            <div class="device-info"><div class="device-name">EDGE-RTR-02</div><div class="device-meta">10.0.1.1 · Juniper JunOS</div></div>
+            <div class="device-badge db-junos">JUNOS</div>
+          </div>
+          <div class="device-row">
+            <div class="device-status-dot ds-ok"></div>
+            <div class="device-info"><div class="device-name">DIST-SW-01</div><div class="device-meta">10.0.0.10 · Cisco NX-OS</div></div>
+            <div class="device-badge db-cisco">NX-OS</div>
+          </div>
+          <div class="device-row">
+            <div class="device-status-dot ds-ok"></div>
+            <div class="device-info"><div class="device-name">FW-PERIMETER-01</div><div class="device-meta">10.0.0.254 · Palo Alto</div></div>
+            <div class="device-badge db-panos">PAN-OS</div>
+          </div>
+          <div class="device-row">
+            <div class="device-status-dot ds-ok"></div>
+            <div class="device-info"><div class="device-name">vyos-lab-01</div><div class="device-meta">10.100.0.101 · VyOS</div></div>
+            <div class="device-badge db-vyos">VYOS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Devices -->
+    <div id="view-devices" class="view">
+      <div class="toolbar">
+        <input class="search-box" placeholder="Search hostname, IP, vendor..." type="text">
+        <select class="filter-select"><option>All Status</option><option>Managed</option><option>Unreachable</option><option>Degraded</option></select>
+        <select class="filter-select"><option>All Vendors</option><option>Cisco</option><option>Juniper</option><option>Palo Alto</option><option>VyOS</option></select>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-ghost">Export CSV</button>
+          <button class="btn btn-primary">+ Add Device</button>
+        </div>
+      </div>
+      <div class="device-table">
+        <table>
+          <thead>
+            <tr>
+              <th>STATUS</th><th>HOSTNAME</th><th>MANAGEMENT IP</th><th>VENDOR / OS</th>
+              <th>SITE</th><th>LAST SEEN</th><th>LAST CONFIG</th><th>COMPLIANCE</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="setView('config')">
+              <td><span class="status-badge sb-managed">● managed</span></td>
+              <td class="td-host">CORE-RTR-01</td>
+              <td class="td-mono">10.0.0.1</td>
+              <td><span class="device-badge db-cisco">Cisco IOS-XE</span></td>
+              <td class="td-mono">SITE-A</td>
+              <td class="td-mono" style="color:var(--text2)">2m ago</td>
+              <td class="td-mono" style="color:var(--text2)">13:00</td>
+              <td><span style="color:var(--green);font-family:var(--mono);font-size:11px">92%</span></td>
+              <td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">Pull Config</button></td>
+            </tr>
+            <tr onclick="setView('recovery')">
+              <td><span class="status-badge sb-unreachable">● unreachable</span></td>
+              <td class="td-host" style="color:var(--red)">CORE-SW-03</td>
+              <td class="td-mono">10.0.0.3</td>
+              <td><span class="device-badge db-cisco">Cisco NX-OS</span></td>
+              <td class="td-mono">SITE-A</td>
+              <td class="td-mono" style="color:var(--red)">9m ago</td>
+              <td class="td-mono" style="color:var(--text2)">14:23</td>
+              <td><span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span></td>
+              <td><button class="btn" style="padding:4px 8px;font-size:11px;background:rgba(248,81,73,0.1);border-color:var(--red2);color:var(--red)">Recover</button></td>
+            </tr>
+            <tr onclick="setView('config')">
+              <td><span class="status-badge sb-degraded">⚠ degraded</span></td>
+              <td class="td-host" style="color:var(--amber)">EDGE-RTR-02</td>
+              <td class="td-mono">10.0.1.1</td>
+              <td><span class="device-badge db-junos">Juniper JunOS</span></td>
+              <td class="td-mono">SITE-B</td>
+              <td class="td-mono" style="color:var(--text2)">1m ago</td>
+              <td class="td-mono" style="color:var(--amber)">13:51 ⚠</td>
+              <td><span style="color:var(--amber);font-family:var(--mono);font-size:11px">78%</span></td>
+              <td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">View Diff</button></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge sb-managed">● managed</span></td>
+              <td class="td-host">DIST-SW-01</td>
+              <td class="td-mono">10.0.0.10</td>
+              <td><span class="device-badge db-cisco">Cisco NX-OS</span></td>
+              <td class="td-mono">SITE-A</td>
+              <td class="td-mono" style="color:var(--text2)">1m ago</td>
+              <td class="td-mono" style="color:var(--text2)">13:00</td>
+              <td><span style="color:var(--green);font-family:var(--mono);font-size:11px">95%</span></td>
+              <td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">Pull Config</button></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge sb-managed">● managed</span></td>
+              <td class="td-host">FW-PERIMETER-01</td>
+              <td class="td-mono">10.0.0.254</td>
+              <td><span class="device-badge db-panos">Palo Alto PAN-OS</span></td>
+              <td class="td-mono">SITE-A</td>
+              <td class="td-mono" style="color:var(--text2)">30s ago</td>
+              <td class="td-mono" style="color:var(--text2)">13:00</td>
+              <td><span style="color:var(--green);font-family:var(--mono);font-size:11px">99%</span></td>
+              <td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">Pull Config</button></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge sb-managed">● managed</span></td>
+              <td class="td-host">vyos-lab-01</td>
+              <td class="td-mono">10.100.0.101</td>
+              <td><span class="device-badge db-vyos">VyOS</span></td>
+              <td class="td-mono">LAB</td>
+              <td class="td-mono" style="color:var(--text2)">5m ago</td>
+              <td class="td-mono" style="color:var(--text2)">13:00</td>
+              <td><span style="color:var(--green);font-family:var(--mono);font-size:11px">88%</span></td>
+              <td><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">Pull Config</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Config Diff -->
+    <div id="view-config" class="view">
+      <div class="diff-header">
+        <select class="diff-device-select"><option>EDGE-RTR-02 — Juniper JunOS</option><option>CORE-RTR-01 — Cisco IOS-XE</option><option>vyos-lab-01 — VyOS</option></select>
+        <div class="diff-meta">Comparing: 13:51:03 ← 13:00:00</div>
+        <div class="diff-stat"><span class="diff-adds">+3 lines</span> &nbsp;<span class="diff-dels">−1 line</span></div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <span style="font-size:11px;color:var(--amber);font-family:var(--mono)">⚠ Out-of-band change — not via platform</span>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">Raise Ticket</button>
+        </div>
+      </div>
+      <div class="diff-content">
+        <div class="diff-line diff-hunk"><span class="ln"></span><span class="content">@@ -42,8 +42,10 @@ interfaces {</span></div>
+        <div class="diff-line"><span class="ln">42</span><span class="content">    ge-0/0/0 {</span></div>
+        <div class="diff-line"><span class="ln">43</span><span class="content">        description "Uplink to CORE-SW-01";</span></div>
+        <div class="diff-line"><span class="ln">44</span><span class="content">        unit 0 {</span></div>
+        <div class="diff-line"><span class="ln">45</span><span class="content">            family inet {</span></div>
+        <div class="diff-line"><span class="ln">46</span><span class="content">                address 10.1.1.2/30;</span></div>
+        <div class="diff-line"><span class="ln">47</span><span class="content">            }</span></div>
+        <div class="diff-line"><span class="ln">48</span><span class="content">        }</span></div>
+        <div class="diff-line"><span class="ln">49</span><span class="content">    }</span></div>
+        <div class="diff-line diff-hunk"><span class="ln"></span><span class="content">@@ -71,6 +73,9 @@ policy-options {</span></div>
+        <div class="diff-line"><span class="ln">71</span><span class="content">    policy-statement EXPORT-TO-CORE {</span></div>
+        <div class="diff-line"><span class="ln">72</span><span class="content">        term ACCEPT-LOOPBACKS {</span></div>
+        <div class="diff-line"><span class="ln">73</span><span class="content">            from {</span></div>
+        <div class="diff-line diff-del"><span class="ln">74</span><span class="content">-               route-filter 10.200.0.0/24 orlonger;</span></div>
+        <div class="diff-line diff-add"><span class="ln">74</span><span class="content">+               route-filter 10.200.0.0/22 orlonger;</span></div>
+        <div class="diff-line diff-add"><span class="ln">75</span><span class="content">+               route-filter 10.201.0.0/24 orlonger;</span></div>
+        <div class="diff-line diff-add"><span class="ln">76</span><span class="content">+               /* Added by ops - new subnet for Project ATLAS */</span></div>
+        <div class="diff-line"><span class="ln">77</span><span class="content">            }</span></div>
+        <div class="diff-line"><span class="ln">78</span><span class="content">            then accept;</span></div>
+        <div class="diff-line"><span class="ln">79</span><span class="content">        }</span></div>
+        <div class="diff-line"><span class="ln">80</span><span class="content">    }</span></div>
+      </div>
+    </div>
+
+    <!-- Path Test -->
+    <div id="view-pathtest" class="view">
+      <div class="pathtest-header">
+        <div class="pathtest-form">
+          <input class="path-input" value="10.10.1.50" placeholder="Source IP or hostname">
+          <div class="path-arrow">→</div>
+          <input class="path-input" value="10.20.5.100" placeholder="Destination IP or hostname">
+          <select class="filter-select" style="width:120px"><option>TCP/443</option><option>TCP/22</option><option>TCP/80</option><option>UDP/53</option><option>ICMP</option></select>
+          <button class="btn-test">▶ Test Path</button>
+          <div style="margin-left:16px;font-size:11px;color:var(--text2)">Bidirectional · All enforcement points evaluated · <span style="color:var(--amber)">1 DENY detected</span></div>
+        </div>
+      </div>
+      <div class="path-result">
+        <div class="path-source">📍 <span>10.10.1.50</span> — WKSTN-USER-047 — VLAN 10 (User Segment)</div>
+        <div class="path-connector pc-permit"></div>
+        <div class="path-node">
+          <div class="hop-card permit">
+            <div class="hop-icon">🔀</div>
+            <div class="hop-info">
+              <div class="hop-name">ACCESS-SW-04 — Gi0/12</div>
+              <div class="hop-detail">Cisco IOS · Port ACL inbound</div>
+              <div class="hop-rule permit">✓ PERMIT — implicit permit (no ACL applied)</div>
+            </div>
+            <div class="hop-verdict hv-permit">PERMIT</div>
+          </div>
+        </div>
+        <div class="path-connector pc-permit"></div>
+        <div class="path-node">
+          <div class="hop-card permit">
+            <div class="hop-icon">⬡</div>
+            <div class="hop-info">
+              <div class="hop-name">DIST-SW-01 — Vlan10 → Vlan20</div>
+              <div class="hop-detail">Cisco NX-OS · Inter-VLAN routing · ACL VLAN10-OUT</div>
+              <div class="hop-rule permit">✓ PERMIT — rule 40: permit tcp 10.10.0.0/16 any eq 443</div>
+            </div>
+            <div class="hop-verdict hv-permit">PERMIT</div>
+          </div>
+        </div>
+        <div class="path-connector pc-deny"></div>
+        <div class="path-node">
+          <div class="hop-card deny">
+            <div class="hop-icon">🔥</div>
+            <div class="hop-info">
+              <div class="hop-name">FW-PERIMETER-01</div>
+              <div class="hop-detail">Palo Alto PAN-OS · Security Policy · Zone: INTERNAL → DMZ</div>
+              <div class="hop-rule deny">✗ DENY — rule "block-internal-to-dmz" line 47 · log: yes</div>
+            </div>
+            <div class="hop-verdict hv-deny">DENY ✗</div>
+          </div>
+        </div>
+        <div class="path-connector pc-deny"></div>
+        <div class="path-node">
+          <div class="hop-card unknown" style="opacity:0.5">
+            <div class="hop-icon" style="opacity:0.5">◫</div>
+            <div class="hop-info">
+              <div class="hop-name" style="color:var(--text2)">CORE-SW-03</div>
+              <div class="hop-detail">Traffic blocked before reaching this hop</div>
+            </div>
+            <div class="hop-verdict hv-unknown">BLOCKED</div>
+          </div>
+        </div>
+        <div class="path-connector pc-deny"></div>
+        <div class="path-dest">🎯 <span>10.20.5.100</span> — SRV-WEBAPP-01 — VLAN 20 (DMZ)</div>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--bg3);border:1px solid var(--red2);border-radius:8px;max-width:600px;width:100%">
+          <div style="font-size:12px;color:var(--red);font-weight:600;margin-bottom:6px">✗ Path blocked at FW-PERIMETER-01</div>
+          <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">Rule: block-internal-to-dmz · Line 47 · Action: deny · Log: enabled</div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">View Rule</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">Raise Change Request</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">What-if: Permit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Translation -->
+    <div id="view-translation" class="view">
+      <div class="translation-layout">
+        <div class="translation-left">
+          <div class="translation-panel-header">TRANSLATION JOBS</div>
+          <div class="pair-list">
+            <div class="pair-item active">
+              <div><div class="pair-os">CORE-RTR-01</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">IOS-XE → JunOS</div></div>
+              <span class="pair-status"><span class="status-badge sb-degraded" style="font-size:10px">review</span></span>
+            </div>
+            <div class="pair-item">
+              <div><div class="pair-os">DIST-SW-01</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">NX-OS → EOS</div></div>
+              <span class="pair-status"><span class="status-badge sb-unreachable" style="font-size:10px">failed</span></span>
+            </div>
+            <div class="pair-item">
+              <div><div class="pair-os">ACCESS-SW-04</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">IOS → JunOS</div></div>
+              <span class="pair-status"><span class="status-badge sb-managed" style="font-size:10px">complete</span></span>
+            </div>
+          </div>
+          <div style="padding:12px;border-top:1px solid var(--border)">
+            <button class="btn btn-primary" style="width:100%;font-size:11px">+ New Translation</button>
+          </div>
+        </div>
+
+        <div class="translation-right">
+          <div class="report-bar">
+            <div class="report-stat rs-ok">✓ 47 translated</div>
+            <div class="report-stat rs-warn">⚠ 2 warnings</div>
+            <div class="report-stat rs-fail">✗ 0 failed</div>
+            <div style="margin-left:auto;font-size:11px;color:var(--text2)">Confidence: <span style="color:var(--green)">HIGH</span> · CORE-RTR-01 · IOS-XE → JunOS</div>
+            <button class="btn btn-primary" style="font-size:11px;padding:5px 12px">Deploy with Approval</button>
+          </div>
+          <div class="code-panels">
+            <div class="code-panel">
+              <div class="code-panel-header"><span>SOURCE</span> CORE-RTR-01 · Cisco IOS-XE</div>
+              <div class="code-content"><span class="kw-blue">interface</span> GigabitEthernet0/1
+ <span class="kw-blue">description</span> <span class="kw-green">Uplink to CORE-SW-01</span>
+ <span class="kw-blue">ip address</span> <span class="kw-orange">10.1.1.2 255.255.255.252</span>
+ <span class="kw-blue">ip ospf</span> 1 <span class="kw-blue">area</span> 0
+ no shutdown
+<span class="kw-comment">!</span>
+<span class="kw-blue">interface</span> GigabitEthernet0/2
+ <span class="kw-blue">description</span> <span class="kw-green">Link to DIST-SW-01</span>
+ <span class="kw-blue">ip address</span> <span class="kw-orange">10.1.1.6 255.255.255.252</span>
+ <span class="kw-blue">ip ospf</span> 1 <span class="kw-blue">area</span> 0
+ no shutdown
+<span class="kw-comment">!</span>
+<span class="kw-blue">router ospf</span> 1
+ <span class="kw-blue">router-id</span> <span class="kw-orange">10.200.0.1</span>
+ <span class="kw-blue">network</span> 10.1.0.0 0.0.255.255 <span class="kw-blue">area</span> 0
+<span class="kw-comment">!</span>
+<span class="kw-blue">ip access-list extended</span> MGMT-IN
+ <span class="kw-green">permit</span> tcp 10.10.0.0 0.0.255.255 any eq 22
+ <span class="kw-red">deny</span>   ip any any log</div>
+            </div>
+            <div class="code-panel">
+              <div class="code-panel-header"><span>TRANSLATED</span> Target · Juniper JunOS</div>
+              <div class="code-content"><span class="kw-blue">interfaces</span> {
+    <span class="kw-orange">ge-0/0/1</span> {
+        <span class="kw-blue">description</span> <span class="kw-green">"Uplink to CORE-SW-01"</span>;
+        unit 0 {
+            family inet {
+                address <span class="kw-orange">10.1.1.2/30</span>;
+            }
+        }
+    }
+    <span class="kw-orange">ge-0/0/2</span> {
+        <span class="kw-blue">description</span> <span class="kw-green">"Link to DIST-SW-01"</span>;
+        unit 0 {
+            family inet {
+                address <span class="kw-orange">10.1.1.6/30</span>;
+            }
+        }
+    }
+}
+<span class="kw-blue">protocols</span> {
+    <span class="kw-purple">ospf</span> {
+        area <span class="kw-orange">0.0.0.0</span> {
+            interface ge-0/0/1.0;
+            interface ge-0/0/2.0;
+        }
+    }
+}
+<span class="kw-comment">/* ⚠ HSRP → VRRP: review preemption timers */</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recovery -->
+    <div id="view-recovery" class="view">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Management Recovery</div>
+          <div class="view-sub">2 devices unreachable · Recovery proposals generated</div>
+        </div>
+      </div>
+
+      <div class="recovery-device-card">
+        <div class="recovery-device-header">
+          <div>
+            <div class="recovery-device-name">⚡ CORE-SW-03</div>
+            <div class="recovery-cause">Inferred cause: Management VLAN 100 down on DIST-SW-01 (syslog event 14:23:01) — device likely healthy, management plane unreachable</div>
+          </div>
+          <div class="recovery-time">Unreachable since 14:23 · 9 minutes</div>
+        </div>
+        <div class="recovery-options">
+          <div class="recovery-option">
+            <div class="recovery-rank">1</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Neighbour relay via DIST-SW-01</div>
+              <div class="recovery-option-detail">SSH → DIST-SW-01 (reachable) → Gi0/1 point-to-point VLAN 200 (10.255.1.0/30) → CORE-SW-03 · Last verified: topology snapshot 14:20</div>
+            </div>
+            <div class="confidence-badge cb-high">HIGH CONFIDENCE</div>
+            <button class="btn-attempt">Attempt →</button>
+          </div>
+          <div class="recovery-option">
+            <div class="recovery-rank">2</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Console access via CONSOLE-SERVER-01</div>
+              <div class="recovery-option-detail">OOB console · Port tty4 · No network dependency</div>
+            </div>
+            <div class="confidence-badge cb-high">HIGH CONFIDENCE</div>
+            <button class="btn-attempt">Attempt →</button>
+          </div>
+          <div class="recovery-option">
+            <div class="recovery-rank">3</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Alternative IP: Loopback0 (10.200.0.3)</div>
+              <div class="recovery-option-detail">Seen in last config snapshot · Reachable if OSPF routing plane intact</div>
+            </div>
+            <div class="confidence-badge cb-med">MEDIUM CONFIDENCE</div>
+            <button class="btn-attempt">Attempt →</button>
+          </div>
+          <div class="recovery-option" style="opacity:0.6">
+            <div class="recovery-rank" style="color:var(--text3)">4</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Physical access</div>
+              <div class="recovery-option-detail">Building A · Floor 2 · Rack B · Unit 14 · Contact: Site network team</div>
+            </div>
+            <div class="confidence-badge" style="color:var(--text2);border-color:var(--border2)">FALLBACK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recovery-device-card" style="border-color:var(--amber2)">
+        <div class="recovery-device-header" style="background:rgba(210,153,34,0.08);border-color:var(--amber2)">
+          <div>
+            <div class="recovery-device-name" style="color:var(--amber)">⚡ ACCESS-SW-11</div>
+            <div class="recovery-cause">Inferred cause: Unknown — no corroborating syslog events. May be device failure.</div>
+          </div>
+          <div class="recovery-time">Unreachable since 14:29 · 3 minutes</div>
+        </div>
+        <div class="recovery-options">
+          <div class="recovery-option">
+            <div class="recovery-rank">1</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Alternative IP: Loopback0 (10.200.0.11)</div>
+              <div class="recovery-option-detail">Seen in last config snapshot 13:00 · Automated attempt available</div>
+            </div>
+            <div class="confidence-badge cb-med">MEDIUM CONFIDENCE</div>
+            <button class="btn-attempt">Attempt →</button>
+          </div>
+          <div class="recovery-option" style="opacity:0.6">
+            <div class="recovery-rank" style="color:var(--text3)">2</div>
+            <div class="recovery-info">
+              <div class="recovery-option-title">Physical access</div>
+              <div class="recovery-option-detail">Building B · Floor 1 · Rack D · Unit 6</div>
+            </div>
+            <div class="confidence-badge" style="color:var(--text2);border-color:var(--border2)">FALLBACK</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function setView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.topbar-nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>
